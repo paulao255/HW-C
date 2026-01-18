@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 4.2.1)
+project(HW-C LANGUAGES C VERSION 20260118)
+set(CMAKE_C_STANDARD 90) # 90 for C89, 99 for C99, 11 for C11, 17 for C17 and 23 for C23.
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+set(CMAKE_C_FLAGS "-fdiagnostics-color=always -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wformat=2 -Wnull-dereference -Wstrict-prototypes -Wmissing-prototypes -Wcast-align -Wpointer-arith -Wundef -v -O3 -funroll-loops -flto -mtune=native -march=native")
+add_executable(Executable.exe ../src/Main.c)
+file(COPY ${CMAKE_SOURCE_DIR}/README.md ${CMAKE_SOURCE_DIR}/LICENSE DESTINATION ${CMAKE_BINARY_DIR})
