@@ -30,10 +30,10 @@ A `Hello, World!` message with C.
 
 #### Build process
 
-1. Create a directory in `.` named `./build`.
-2. Change actual directory to `./build`.
-3. Type `cmake .. -G Ninja` in `./build` directory to make the `./build/build.ninja`.
-4. Type `ninja` in `./build` to run `./build/build.ninja` and create the compiled file named `./build/Executable.exe`.
+1. Create a directory named `./build` with terminal.
+2. Enter into the `./build` directory.
+3. Type `cmake .. -G Ninja` in `./build` directory to make the `./build/build.ninja` file.
+4. Type `ninja` in `./build` to run `./build/build.ninja` and create the compiled file named `./build/bin/Executable.exe`.
 
 ##### Credits
 
