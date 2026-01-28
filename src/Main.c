@@ -1,7 +1,3 @@
-/* Include guard: */
-#ifndef HW_C
-#define HW_C
-
 /* Importations: */
 #include <stdio.h>
 
@@ -13,6 +9,3 @@ int main(void)
 
 	return 0;
 }
-
-/* End code: */
-#endif
