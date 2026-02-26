@@ -3,9 +3,9 @@
 
 
 /* Main code: */
-int main(void)
+int main(int argc, char **argv)
 {
-	puts("Hello, World!");
+	printf("Hello, World from %s in line %d!\n", *(argv), __LINE__);
 
 	return 0;
 }
