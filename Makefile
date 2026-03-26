@@ -1,8 +1,8 @@
-PROGRAM_NAME = Executable
+PROGRAM_NAME = Ccalc
 
 all:
 	@if [ ! -d "build" ]; then mkdir -p build; fi
-	cd build && cmake .. -G Ninja && ninja
+	cd build && mkdir bin && gcc ../src/Main.c -std=c90 -fdiagnostics-color=always -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wformat=2 -Wnull-dereference -Wstrict-prototypes -Wmissing-prototypes -Wcast-align -Wpointer-arith -Wundef -v -O3 -funroll-loops -flto -mtune=native -march=native -fPIE -pie -fstack-protector-all -o bin/$(PROGRAM_NAME)
 
 run: all
 ifeq ($(OS),Windows_NT)

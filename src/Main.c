@@ -3,9 +3,9 @@
 
 
 /* Main code: */
-int main(int argc, char **argv)
+int main(const int argc, const char *const *const argv)
 {
-	printf("Hello, World from %s in line %d!\n", *(argv), __LINE__);
+	fprintf(stdout, "Hello, world from %s in line %d with %d arguments!\n", *argv, __LINE__, argc);
 
 	return 0;
 }
