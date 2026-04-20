@@ -3,9 +3,11 @@
 
 
 /* Main code: */
-int main(const int argc, const char *const *const argv)
+int main(const signed int argc, const char *const *const argv)
 {
-	fprintf(stdout, "Hello, world from %s in line %d with %d arguments!\n", *argv, __LINE__, argc);
+	const unsigned char *const *const uargv = (const unsigned char *const *const)argv;
+
+	fprintf(stdout, "Hello, world from %s in line %d with %d arguments!\n", *uargv, __LINE__, argc);
 
 	return 0;
 }
