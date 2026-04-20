@@ -1,4 +1,4 @@
-PROGRAM_NAME = Ccalc
+PROGRAM_NAME = hw-c
 
 all:
 	@if [ ! -d "build" ]; then mkdir -p build; fi

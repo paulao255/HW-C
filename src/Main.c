@@ -3,7 +3,7 @@
 
 
 /* Main code: */
-int main(const signed int argc, const char *const *const argv)
+signed int main(const signed int argc, const char *const *const argv)
 {
 	const unsigned char *const *const uargv = (const unsigned char *const *const)argv;
 
