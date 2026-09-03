@@ -11,78 +11,47 @@ on:
 
 jobs:
   test:
-    name: ${{ matrix.name }}
+    name: Make Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
-        include:
-          # Linux
-          - name: Linux - GCC
-            os: ubuntu-latest
-            shell: bash
-            compiler: gcc
-
-          - name: Linux - Clang
-            os: ubuntu-latest
-            shell: bash
-            compiler: clang
-
-          # macOS
-          - name: macOS - Clang
-            os: macos-latest
-            shell: bash
-            compiler: clang
-
-          # Windows / MSYS2
-          - name: Windows - GCC (UCRT64)
-            os: windows-latest
-            shell: msys2 {0}
-            msystem: UCRT64
-            compiler: gcc
-
-          - name: Windows - Clang (CLANG64)
-            os: windows-latest
-            shell: msys2 {0}
-            msystem: CLANG64
-            compiler: clang
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       # Linux
-      - name: Install build tools (Linux)
+      - name: Install Clang and Make (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y make gcc clang
+          sudo apt-get install -y clang make
 
-      # macOS
-      - name: Check build tools (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          make --version
-          clang --version
-
-      # Windows / MSYS2
-      - name: Setup MSYS2
+      # Windows
+      - name: Setup MSYS2 CLANG64 (Windows)
         if: runner.os == 'Windows'
         uses: msys2/setup-msys2@v2
         with:
-          msystem: ${{ matrix.msystem }}
+          msystem: CLANG64
           update: true
           install: >-
             make
-            ${{ matrix.compiler == 'gcc' && 'mingw-w64-ucrt-x86_64-gcc' || 'mingw-w64-clang-x86_64-clang' }}
+            mingw-w64-clang-x86_64-clang
 
-      # Show toolchain
-      - name: Check build tools
+      # macOS
+      - name: Check Clang and Make
+        shell: bash
         run: |
+          clang --version
           make --version
-          ${{ matrix.compiler }} --version
 
-      # Run the Makefile target
+      # Run Makefile
       - name: Run make test
+        shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
         run: make test

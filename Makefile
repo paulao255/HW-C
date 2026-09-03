@@ -4,7 +4,7 @@
 
 APPLICATION_NAME = HW-C
 PROGRAM_NAME = hw-c
-APPLICATION_VERSION = 2026-09-03.1
+APPLICATION_VERSION = 2026-09-03.2
 
 CC = clang
 CPPC = clang++
@@ -12,7 +12,11 @@ CSTD = c90
 CPPSTD = c++98
 
 FLAGS = -fdiagnostics-color=always -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wformat=2 -Wnull-dereference -Wcast-align -Wpointer-arith -Wundef -Os -funroll-loops -fstack-protector-strong -v
-LINKFLAGS = -flto -fPIE -pie
+LINKFLAGS = -flto -pie
+ifeq ($(OS), Windows_NT)
+else
+	LINKFLAGS += -fPIE
+endif
 CFLAGS = -std=$(CSTD) $(FLAGS) $(LINKFLAGS) -Wstrict-prototypes -Wmissing-prototypes
 CPPFLAGS = -std=$(CPPSTD) $(FLAGS) $(LINKFLAGS)
 
