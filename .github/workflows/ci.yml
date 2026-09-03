@@ -44,14 +44,30 @@ jobs:
             make
             mingw-w64-clang-x86_64-clang
 
-      # macOS
-      - name: Check Clang and Make
+      # Check Clang and Make
+      - name: Check Clang and Make (Linux/macOS)
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           clang --version
           make --version
 
+      # Check Clang and Make
+      - name: Check Clang and Make (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          clang --version
+          make --version
+
       # Run Makefile
-      - name: Run make test
-        shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
+      - name: Run make test (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: make test
+
+      # Run Makefile
+      - name: Run make test (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
         run: make test
