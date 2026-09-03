@@ -10,6 +10,11 @@ on:
       - '**'
 
 jobs:
+
+  # ============================================================
+  # Linux / macOS / Windows
+  # ============================================================
+
   test:
     name: Make Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -71,3 +76,75 @@ jobs:
         if: runner.os == 'Windows'
         shell: msys2 {0}
         run: make test
+
+
+  # ============================================================
+  # Android - ARM64
+  # ============================================================
+
+  android:
+    name: Make Test (Android ARM64)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r29
+
+      - name: Install Make
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make
+
+      - name: Check Android Clang and Make
+        shell: bash
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+        run: |
+          "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android35-clang" --version
+          make --version
+
+      - name: Run make test
+        shell: bash
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+        run: |
+          make test \
+            CC="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android35-clang"
+
+
+  # ============================================================
+  # iOS - ARM64
+  # ============================================================
+
+  ios:
+    name: Make Test (iOS ARM64)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Check Clang, Make and Xcode
+        shell: bash
+        run: |
+          clang --version
+          make --version
+          xcodebuild -version
+
+      - name: Get iOS SDK
+        shell: bash
+        run: |
+          SDK_PATH="$(xcrun --sdk iphoneos --show-sdk-path)"
+          echo "IOS_SDK_PATH=$SDK_PATH" >> "$GITHUB_ENV"
+
+      - name: Run make test
+        shell: bash
+        run: |
+          make test \
+            CC="clang -target arm64-apple-ios26.0 -isysroot $IOS_SDK_PATH"
