@@ -1,0 +1,76 @@
+name: Compilação Multiplataforma (C90 e C++98)
+
+on:
+  push:
+    branches:
+      - '**' # Roda em todas as branches a cada push
+  pull_request:
+    branches:
+      - '**' # Roda em todas as PRs abertas ou atualizadas
+
+jobs:
+  # 1. Compilações Desktop (Windows, Linux, macOS)
+  desktop:
+    name: Desktop (${{ matrix.os }} - ${{ matrix.std }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        std: [c90]
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Instalar LLVM/Clang (Linux e Windows)
+        if: matrix.os != 'macos-latest'
+        uses: llvm/actions/install-llvm@main
+        with:
+          version: "16.0"
+
+      - name: Compilar C90 (Clang)
+        if: matrix.std == 'c90'
+        run: clang -std=c90 -fdiagnostics-color=always -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wformat=2 -Wnull-dereference -Wcast-align -Wpointer-arith -Wundef -Os -funroll-loops -fstack-protector-strong -v -c src/*.c
+
+  # 2. Compilações Mobile - Android (Cross-compilação no Linux)
+  android:
+    name: Mobile (Android - ${{ matrix.std }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        std: [c90]
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Android NDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r25c
+
+      - name: Compilar C90 para Android
+        if: matrix.std == 'c90'
+        run: |
+          $ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android33-clang -std=c90 -Wall -Wextra -Wpedantic -Os -Iinclude src/*.c tests/test.c -c
+
+  # 3. Compilações Mobile - iOS (Cross-compilação no macOS)
+  ios:
+    name: Mobile (iOS - ${{ matrix.std }})
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        std: [c90]
+
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Compilar C90 para iOS Simulator
+        if: matrix.std == 'c90'
+        run: |
+          SDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)
+          clang -std=c90 -Wall -Wextra -Wpedantic -Os -target arm64-apple-ios14.0-simulator -isysroot $SDK_PATH src/*.c -c
