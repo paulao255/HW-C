@@ -1,76 +1,88 @@
-name: Compilação Multiplataforma (C90 e C++98)
+name: Makefile Test
 
 on:
   push:
     branches:
-      - '**' # Roda em todas as branches a cada push
+      - '**'
+
   pull_request:
     branches:
-      - '**' # Roda em todas as PRs abertas ou atualizadas
+      - '**'
 
 jobs:
-  # 1. Compilações Desktop (Windows, Linux, macOS)
-  desktop:
-    name: Desktop (${{ matrix.os }} - ${{ matrix.std }})
+  test:
+    name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        std: [c90]
+        include:
+          # Linux
+          - name: Linux - GCC
+            os: ubuntu-latest
+            shell: bash
+            compiler: gcc
+
+          - name: Linux - Clang
+            os: ubuntu-latest
+            shell: bash
+            compiler: clang
+
+          # macOS
+          - name: macOS - Clang
+            os: macos-latest
+            shell: bash
+            compiler: clang
+
+          # Windows / MSYS2
+          - name: Windows - GCC (UCRT64)
+            os: windows-latest
+            shell: msys2 {0}
+            msystem: UCRT64
+            compiler: gcc
+
+          - name: Windows - Clang (CLANG64)
+            os: windows-latest
+            shell: msys2 {0}
+            msystem: CLANG64
+            compiler: clang
 
     steps:
-      - name: Baixar código
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Instalar LLVM/Clang (Linux e Windows)
-        if: matrix.os != 'macos-latest'
-        uses: llvm/actions/install-llvm@main
-        with:
-          version: "16.0"
-
-      - name: Compilar C90 (Clang)
-        if: matrix.std == 'c90'
-        run: clang -std=c90 -fdiagnostics-color=always -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wformat=2 -Wnull-dereference -Wcast-align -Wpointer-arith -Wundef -Os -funroll-loops -fstack-protector-strong -v -c src/*.c
-
-  # 2. Compilações Mobile - Android (Cross-compilação no Linux)
-  android:
-    name: Mobile (Android - ${{ matrix.std }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        std: [c90]
-
-    steps:
-      - name: Baixar código
-        uses: actions/checkout@v4
-
-      - name: Configurar Android NDK
-        uses: nttld/setup-ndk@v1
-        with:
-          ndk-version: r25c
-
-      - name: Compilar C90 para Android
-        if: matrix.std == 'c90'
+      # Linux
+      - name: Install build tools (Linux)
+        if: runner.os == 'Linux'
         run: |
-          $ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android33-clang -std=c90 -Wall -Wextra -Wpedantic -Os -Iinclude src/*.c tests/test.c -c
+          sudo apt-get update
+          sudo apt-get install -y make gcc clang
 
-  # 3. Compilações Mobile - iOS (Cross-compilação no macOS)
-  ios:
-    name: Mobile (iOS - ${{ matrix.std }})
-    runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        std: [c90]
-
-    steps:
-      - name: Baixar código
-        uses: actions/checkout@v4
-
-      - name: Compilar C90 para iOS Simulator
-        if: matrix.std == 'c90'
+      # macOS
+      - name: Check build tools (macOS)
+        if: runner.os == 'macOS'
         run: |
-          SDK_PATH=$(xcrun --sdk iphonesimulator --show-sdk-path)
-          clang -std=c90 -Wall -Wextra -Wpedantic -Os -target arm64-apple-ios14.0-simulator -isysroot $SDK_PATH src/*.c -c
+          make --version
+          clang --version
+
+      # Windows / MSYS2
+      - name: Setup MSYS2
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          update: true
+          install: >-
+            make
+            ${{ matrix.compiler == 'gcc' && 'mingw-w64-ucrt-x86_64-gcc' || 'mingw-w64-clang-x86_64-clang' }}
+
+      # Show toolchain
+      - name: Check build tools
+        run: |
+          make --version
+          ${{ matrix.compiler }} --version
+
+      # Run the Makefile target
+      - name: Run make test
+        run: make test

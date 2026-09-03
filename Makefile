@@ -4,6 +4,7 @@
 
 APPLICATION_NAME = HW-C
 PROGRAM_NAME = hw-c
+APPLICATION_VERSION = 2026-09-03.1
 
 CC = clang
 CPPC = clang++
@@ -26,7 +27,7 @@ OBJS =
 # Functions: #
 ##############
 
-.PHONY: all run install uninstall clean
+.PHONY: all run install uninstall clean help test
 
 all:
 	@if [ ! -d "build" ]; then mkdir build; fi
@@ -69,4 +70,18 @@ ifeq ($(OS), Windows_NT)
 	@if exist build rmdir /s /q build
 else
 	rm -rf build
+endif
+
+help:
+	@echo "App name: $(APPLICATION_NAME)"
+	@echo "Version: $(APPLICATION_VERSION)"
+	@echo "Standards: [$(CSTD) $(CPPSTD)]"
+	@echo "Make commands: all run install uninstall clean help test"
+
+test:
+	@if [ ! -d "build" ]; then mkdir build; fi
+ifeq ($(OS), Windows_NT)
+	cd build && $(CC) $(SRCS) $(OBJS) $(INCLUDES) $(CFLAGS) $(LIBS) -c
+else
+	cd build && $(CC) $(SRCS) $(OBJS) $(INCLUDES) $(CFLAGS) $(LIBS) -c
 endif
