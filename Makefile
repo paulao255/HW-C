@@ -4,7 +4,7 @@
 
 APPLICATION_NAME = HW-C
 PROGRAM_NAME = hw-c
-APPLICATION_VERSION = 2026-09-03.2
+APPLICATION_VERSION = 2026-09-03
 
 CC = clang
 CPPC = clang++
@@ -12,13 +12,16 @@ CSTD = c90
 CPPSTD = c++98
 
 FLAGS = -fdiagnostics-color=always -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wformat=2 -Wnull-dereference -Wcast-align -Wpointer-arith -Wundef -Os -funroll-loops -fstack-protector-strong -v
-LINKFLAGS = -flto -pie
+CFLAGS = -std=$(CSTD) $(FLAGS) -Wstrict-prototypes -Wmissing-prototypes
+CPPFLAGS = -std=$(CPPSTD) $(FLAGS)
+
+LINKFLAGS = -flto
+
 ifeq ($(OS), Windows_NT)
 else
-	LINKFLAGS += -fPIE
+	CFLAGS += -fPIE
+	LINKFLAGS += -pie
 endif
-CFLAGS = -std=$(CSTD) $(FLAGS) $(LINKFLAGS) -Wstrict-prototypes -Wmissing-prototypes
-CPPFLAGS = -std=$(CPPSTD) $(FLAGS) $(LINKFLAGS)
 
 INCLUDES =
 
@@ -37,9 +40,9 @@ all:
 	@if [ ! -d "build" ]; then mkdir build; fi
 	@if [ ! -d "build/bin" ]; then mkdir build/bin; fi
 ifeq ($(OS), Windows_NT)
-	cd build && $(CC) $(SRCS) $(OBJS) $(INCLUDES) $(CFLAGS) $(LIBS) -o bin\$(PROGRAM_NAME).exe
+	cd build && $(CC) $(SRCS) $(OBJS) $(INCLUDES) $(CFLAGS) $(LINKFLAGS) $(LIBS) -o bin\$(PROGRAM_NAME).exe
 else
-	cd build && $(CC) $(SRCS) $(OBJS) $(INCLUDES) $(CFLAGS) $(LIBS) -o bin/$(PROGRAM_NAME)
+	cd build && $(CC) $(SRCS) $(OBJS) $(INCLUDES) $(CFLAGS) $(LINKFLAGS) $(LIBS) -o bin/$(PROGRAM_NAME)
 endif
 
 run: all
@@ -84,8 +87,4 @@ help:
 
 test:
 	@if [ ! -d "build" ]; then mkdir build; fi
-ifeq ($(OS), Windows_NT)
 	cd build && $(CC) $(SRCS) $(OBJS) $(INCLUDES) $(CFLAGS) $(LIBS) -c
-else
-	cd build && $(CC) $(SRCS) $(OBJS) $(INCLUDES) $(CFLAGS) $(LIBS) -c
-endif
